@@ -1,8 +1,8 @@
 export type Users = {
-    id: number;
-    name: string;
-    email: string;
-    password: string;
-    created_at: Date;
-    updated_at: Date;
-}
+  id: number;
+  email: string;
+  password: string;
+  role: "admin" | "user";
+  created_at: Date;
+  updated_at: Date;
+};
