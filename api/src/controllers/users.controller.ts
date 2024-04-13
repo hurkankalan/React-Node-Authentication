@@ -175,7 +175,11 @@ const usersControllers = {
       }
 
       const token = jwt.sign(
-        { id: user.rows[0].id, email: user.rows[0].email },
+        {
+          id: user.rows[0].id,
+          email: user.rows[0].email,
+          role: user.rows[0].role,
+        },
         process.env.JWT_SECRET,
         {
           expiresIn: "24h",
