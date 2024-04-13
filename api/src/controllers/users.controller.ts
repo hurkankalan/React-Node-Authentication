@@ -34,24 +34,6 @@ const usersControllers = {
     }
   },
 
-  async userByEmail(req: Request, res: Response): Promise<Response> {
-    const { email } = req.params;
-
-    if (!email) return res.status(400).json("Email is required");
-
-    try {
-      const user = await usersModels.getUserByEmail(email);
-
-      if (!user.rows[0]) {
-        return res.status(404).json("User not found");
-      }
-
-      return res.status(200).json(user.rows);
-    } catch (error) {
-      return res.status(500).json(error);
-    }
-  },
-
   async updateUser(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
     const { email, password, role } = req.body;
