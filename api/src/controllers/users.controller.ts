@@ -10,6 +10,10 @@ const usersControllers = {
     try {
       const users = await usersModels.getAllUsers();
 
+      if (users.rowCount === 0) {
+        return res.status(404).json("No users found");
+      }
+
       return res.status(200).json(users.rows);
     } catch (error) {
       return res.status(500).json(error);
@@ -19,7 +23,9 @@ const usersControllers = {
   async userById(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
 
-    if (!id) return res.status(400).json("Id is required");
+    if (!id) {
+      return res.status(400).json("Id is required");
+    }
 
     try {
       const user = await usersModels.getUserById(parseInt(id));
@@ -46,7 +52,7 @@ const usersControllers = {
       const oldUserInfos = await usersModels.getUserById(parseInt(id));
 
       if (!oldUserInfos.rows[0]) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json("User not found");
       }
 
       if (
@@ -90,7 +96,9 @@ const usersControllers = {
   async deleteUser(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
 
-    if (!id) return res.status(400).json("Id is required");
+    if (!id) {
+      return res.status(400).json("Id is required");
+    }
 
     try {
       const checkUserIsExist = await usersModels.getUserById(parseInt(id));
@@ -148,9 +156,7 @@ const usersControllers = {
 
     for (const key in req.body) {
       if (!req.body[key]) {
-        res
-          .status(400)
-          .json({ error: "One or more data are missing in the body" });
+        res.status(400).json("One or more data are missing in the body");
       }
     }
 
@@ -171,7 +177,7 @@ const usersControllers = {
       }
 
       if (!process.env.JWT_SECRET) {
-        return res.status(404).json({ error: "JWT_SECRET is missing" });
+        return res.status(404).json("JWT_SECRET is missing");
       }
 
       const token = jwt.sign(

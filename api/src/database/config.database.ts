@@ -15,7 +15,7 @@ const pool = new Pool({
 
 pool.connect((error, client, done) => {
   if (error) {
-    console.error(error.message);
+    console.error(`Error database connection : ${error.message}`);
 
     if (done) {
       done(error);
@@ -23,7 +23,7 @@ pool.connect((error, client, done) => {
 
     process.exit(1);
   } else {
-    console.log("Connected to database 🛜");
+    console.log("Connected to database 🚀");
   }
 
   if (done) {
