@@ -4,5 +4,4 @@ export type Users = {
   password: string;
   role: "admin" | "user";
   created_at: Date;
-  updated_at: Date;
 };
