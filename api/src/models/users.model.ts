@@ -25,12 +25,11 @@ const usersModels = {
   updateUser(
     id: number,
     email: string,
-    password: string,
-    role: "admin" | "user"
+    password: string
   ): Promise<QueryResult<Users>> {
     return pool.query(
-      "UPDATE users SET email = $2, password = $3, role= $4, WHERE id = $1",
-      [id, email, password, role]
+      "UPDATE users SET email = $2, password = $3 WHERE id = $1",
+      [id, email, password]
     );
   },
 
