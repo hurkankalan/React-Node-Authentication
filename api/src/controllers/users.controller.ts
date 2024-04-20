@@ -132,7 +132,7 @@ const usersControllers = {
       const user = await usersModels.getUserByEmail(email);
 
       if (user.rows[0]) {
-        return res.status(409).json("User already exists");
+        return res.status(409).json({ error: "User already exists" });
       }
 
       const hashedPassword = await hashPassword(password);
@@ -140,13 +140,13 @@ const usersControllers = {
       const newUser = await usersModels.createUser(email, hashedPassword);
 
       if (newUser.rowCount === 0) {
-        return res.status(500).json("User isn't created");
+        return res.status(500).json({ error: "User isn't created" });
       }
 
       return res.sendStatus(201);
     } catch (error) {
       console.error(error);
-      return res.status(500).json(error);
+      return res.status(500).json({ error: error.message });
     }
   },
 
@@ -155,7 +155,7 @@ const usersControllers = {
 
     for (const key in req.body) {
       if (!req.body[key]) {
-        res.status(400).json("One or more data are missing in the body");
+        res.status(400).json({ error: "Email and/or password are missing" });
       }
     }
 
@@ -163,7 +163,7 @@ const usersControllers = {
       const user = await usersModels.getUserByEmail(email);
 
       if (!user.rows[0]) {
-        return res.status(404).json("User not found");
+        return res.status(404).json({ error: "User not found" });
       }
 
       const passwordIsValid = await comparePassword(
@@ -172,11 +172,15 @@ const usersControllers = {
       );
 
       if (!passwordIsValid) {
-        return res.status(401).json("Password is incorrect");
+        return res
+          .status(401)
+          .json({ error: "Password is incorrectn authentication failed" });
       }
 
       if (!process.env.JWT_SECRET) {
-        return res.status(404).json("JWT_SECRET is missing");
+        return res.status(404).json({
+          error: "JWT_SECRET is missing, please contact the administrator",
+        });
       }
 
       const token = jwt.sign(
@@ -193,7 +197,8 @@ const usersControllers = {
 
       return res.status(200).json(token);
     } catch (error) {
-      return res.status(500).json(error);
+      console.error(error);
+      return res.status(500).json({ error: error.message });
     }
   },
 };

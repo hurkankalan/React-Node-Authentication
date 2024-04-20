@@ -5,3 +5,9 @@ export type Users = {
   role: "admin" | "user";
   created_at: Date;
 };
+
+export type JwtPayload = {
+  id: number;
+  email: string;
+  role: "admin" | "user";
+};
