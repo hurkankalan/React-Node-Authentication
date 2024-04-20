@@ -16,21 +16,20 @@ const usersModels = {
   },
 
   createUser(email: string, password: string): Promise<QueryResult<Users>> {
-    return pool.query(
-      "INSERT INTO users (email, password, role) VALUES ($1, $2)",
-      [email, password]
-    );
+    return pool.query("INSERT INTO users (email, password) VALUES ($1, $2)", [
+      email,
+      password,
+    ]);
   },
 
   updateUser(
     id: number,
     email: string,
-    password: string,
-    role: "admin" | "user"
+    password: string
   ): Promise<QueryResult<Users>> {
     return pool.query(
-      "UPDATE users SET email = $2, password = $3, role= $4, WHERE id = $1",
-      [id, email, password, role]
+      "UPDATE users SET email = $2, password = $3 WHERE id = $1",
+      [id, email, password]
     );
   },
 

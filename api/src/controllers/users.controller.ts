@@ -11,12 +11,13 @@ const usersControllers = {
       const users = await usersModels.getAllUsers();
 
       if (users.rowCount === 0) {
-        return res.status(404).json("No users found");
+        return res.status(404).json({ error: "No users found" });
       }
 
       return res.status(200).json(users.rows);
     } catch (error) {
-      return res.status(500).json(error);
+      console.error(error);
+      return res.status(500).json({ error: error.message });
     }
   },
 
@@ -24,43 +25,52 @@ const usersControllers = {
     const { id } = req.params;
 
     if (!id) {
-      return res.status(400).json("Id is required");
+      return res.status(400).json({ error: "Id is required" });
     }
 
     try {
       const user = await usersModels.getUserById(parseInt(id));
 
       if (!user.rows[0]) {
-        return res.status(404).json("User not found");
+        return res.status(404).json({ error: "User not found" });
       }
 
       return res.status(200).json(user.rows);
     } catch (error) {
-      return res.status(500).json(error);
+      console.error(error);
+      return res.status(500).json({ error: error.message });
     }
   },
 
   async updateUser(req: Request, res: Response): Promise<Response> {
     const { id } = req.params;
-    const { email, password, role } = req.body;
+    const { email, password } = req.body;
 
     if (!id) {
-      return res.status(400).json("Id is required");
+      return res.status(400).json({ error: "Id is required" });
+    }
+
+    if (!email && !password) {
+      return res.status(400).json({
+        error:
+          "Email or password informations are required for updating user information",
+      });
     }
 
     try {
       const oldUserInfos = await usersModels.getUserById(parseInt(id));
 
       if (!oldUserInfos.rows[0]) {
-        return res.status(404).json("User not found");
+        return res.status(404).json({ error: "User not found" });
       }
 
       if (
         email === oldUserInfos.rows[0].email &&
-        password === oldUserInfos.rows[0].password &&
-        role === oldUserInfos.rows[0].role
+        password === oldUserInfos.rows[0].password
       ) {
-        return res.status(304).json("No changes detected, user not updated");
+        return res
+          .status(304)
+          .json({ error: "No changes detected, user not updated" });
       }
 
       const newUserInfos = {
@@ -70,24 +80,21 @@ const usersControllers = {
             : oldUserInfos.rows[0].email,
         password:
           oldUserInfos.rows[0].password !== password
-            ? password
+            ? await hashPassword(password)
             : oldUserInfos.rows[0].password,
-        role:
-          oldUserInfos.rows[0].role !== role ? role : oldUserInfos.rows[0].role,
       };
 
       const newUser = await usersModels.updateUser(
         parseInt(id),
         newUserInfos.email,
-        newUserInfos.password,
-        newUserInfos.role
+        newUserInfos.password
       );
 
       if (newUser.rowCount === 0) {
-        return res.status(500).json("User isn't updated");
+        return res.status(500).json({ error: "Error during updating user" });
       }
 
-      return res.status(201).json(newUser.rows);
+      return res.sendStatus(201);
     } catch (error) {
       return res.status(500).json(error);
     }
@@ -104,18 +111,18 @@ const usersControllers = {
       const checkUserIsExist = await usersModels.getUserById(parseInt(id));
 
       if (!checkUserIsExist.rows[0]) {
-        return res.status(404).json("User not found");
+        return res.status(404).json({ error: "User not found" });
       }
 
       const deleteUser = await usersModels.deleteUser(parseInt(id));
 
       if (deleteUser.rowCount === 0) {
-        return res.status(500).json("User isn't deleted");
+        return res.status(500).json({ error: "Error duraing deleting user" });
       }
 
       return res.sendStatus(204);
     } catch (error) {
-      return res.status(500).json(error);
+      return res.status(500).json({ error: error.message });
     }
   },
 
@@ -124,9 +131,7 @@ const usersControllers = {
 
     for (const key in req.body) {
       if (!req.body[key]) {
-        res
-          .status(400)
-          .json({ error: "One or more data are missing in the body" });
+        res.status(400).json({ error: "Email and/or password are missing" });
       }
     }
 
@@ -134,7 +139,7 @@ const usersControllers = {
       const user = await usersModels.getUserByEmail(email);
 
       if (user.rows[0]) {
-        return res.status(409).json("User already exists");
+        return res.status(409).json({ error: "User already exists" });
       }
 
       const hashedPassword = await hashPassword(password);
@@ -142,29 +147,38 @@ const usersControllers = {
       const newUser = await usersModels.createUser(email, hashedPassword);
 
       if (newUser.rowCount === 0) {
-        return res.status(500).json("User isn't created");
+        return res.status(500).json({ error: "User isn't created" });
       }
 
       return res.sendStatus(201);
     } catch (error) {
-      return res.status(500).json(error);
+      console.error(error);
+      return res.status(500).json({ error: error.message });
     }
   },
 
   async login(req: Request, res: Response): Promise<Response> {
     const { email, password } = req.body;
+    const token = req.headers["authorization"];
 
     for (const key in req.body) {
       if (!req.body[key]) {
-        res.status(400).json("One or more data are missing in the body");
+        res.status(400).json({ error: "Email and/or password are missing" });
       }
+    }
+
+    if (token) {
+      return res.status(403).json({
+        error:
+          "An account is already connected, please disconnect the current account first before logging into your account",
+      });
     }
 
     try {
       const user = await usersModels.getUserByEmail(email);
 
       if (!user.rows[0]) {
-        return res.status(404).json("User not found");
+        return res.status(404).json({ error: "User not found" });
       }
 
       const passwordIsValid = await comparePassword(
@@ -173,11 +187,15 @@ const usersControllers = {
       );
 
       if (!passwordIsValid) {
-        return res.status(401).json("Password is incorrect");
+        return res
+          .status(401)
+          .json({ error: "Password is incorrectn authentication failed" });
       }
 
       if (!process.env.JWT_SECRET) {
-        return res.status(404).json("JWT_SECRET is missing");
+        return res.status(404).json({
+          error: "JWT_SECRET is missing, please contact the administrator",
+        });
       }
 
       const token = jwt.sign(
@@ -192,9 +210,10 @@ const usersControllers = {
         }
       );
 
-      return res.status(200).json(token);
+      return res.status(201).json(token);
     } catch (error) {
-      return res.status(500).json(error);
+      console.error(error);
+      return res.status(500).json({ error: error.message });
     }
   },
 };
