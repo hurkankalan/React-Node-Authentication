@@ -111,18 +111,18 @@ const usersControllers = {
       const checkUserIsExist = await usersModels.getUserById(parseInt(id));
 
       if (!checkUserIsExist.rows[0]) {
-        return res.status(404).json("User not found");
+        return res.status(404).json({ error: "User not found" });
       }
 
       const deleteUser = await usersModels.deleteUser(parseInt(id));
 
       if (deleteUser.rowCount === 0) {
-        return res.status(500).json("User isn't deleted");
+        return res.status(500).json({ error: "Error duraing deleting user" });
       }
 
       return res.sendStatus(204);
     } catch (error) {
-      return res.status(500).json(error);
+      return res.status(500).json({ error: error.message });
     }
   },
 
