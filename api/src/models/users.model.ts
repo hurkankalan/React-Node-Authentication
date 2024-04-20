@@ -16,10 +16,10 @@ const usersModels = {
   },
 
   createUser(email: string, password: string): Promise<QueryResult<Users>> {
-    return pool.query(
-      "INSERT INTO users (email, password, role) VALUES ($1, $2)",
-      [email, password]
-    );
+    return pool.query("INSERT INTO users (email, password) VALUES ($1, $2)", [
+      email,
+      password,
+    ]);
   },
 
   updateUser(

@@ -124,9 +124,7 @@ const usersControllers = {
 
     for (const key in req.body) {
       if (!req.body[key]) {
-        res
-          .status(400)
-          .json({ error: "One or more data are missing in the body" });
+        res.status(400).json({ error: "Email and/or password are missing" });
       }
     }
 
@@ -147,6 +145,7 @@ const usersControllers = {
 
       return res.sendStatus(201);
     } catch (error) {
+      console.error(error);
       return res.status(500).json(error);
     }
   },
