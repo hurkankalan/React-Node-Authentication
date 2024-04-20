@@ -152,11 +152,19 @@ const usersControllers = {
 
   async login(req: Request, res: Response): Promise<Response> {
     const { email, password } = req.body;
+    const token = req.headers["authorization"];
 
     for (const key in req.body) {
       if (!req.body[key]) {
         res.status(400).json({ error: "Email and/or password are missing" });
       }
+    }
+
+    if (token) {
+      return res.status(403).json({
+        error:
+          "An account is already connected, please disconnect the current account first before logging into your account",
+      });
     }
 
     try {
@@ -195,7 +203,7 @@ const usersControllers = {
         }
       );
 
-      return res.status(200).json(token);
+      return res.status(201).json(token);
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: error.message });
