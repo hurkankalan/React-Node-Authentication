@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import authRouter from "./routes/auth.route";
 import userRouter from "./routes/users.route";
+import { isAuthenticated } from "./middlewares/auth.middleware";
 
 const app = express();
 dotenv.config();
@@ -18,7 +19,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use(authRouter);
-app.use("/api/users", userRouter);
+app.use("/api/users", isAuthenticated, userRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port http://localhost/:${port}`);
