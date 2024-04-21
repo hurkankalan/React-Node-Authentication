@@ -216,6 +216,25 @@ const usersControllers = {
       return res.status(500).json({ error: error.message });
     }
   },
+
+  async logout(req: Request, res: Response): Promise<Response> {
+    const token = req.headers["authorization"];
+
+    try {
+      if (!token) {
+        return res.status(401).json({ error: "No token provided" });
+      }
+
+      req.headers["authorization"] = "";
+
+      return res
+        .status(200)
+        .json({ message: "You have been successfully disconnected" });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: error.message });
+    }
+  },
 };
 
 export default usersControllers;
