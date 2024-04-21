@@ -189,7 +189,7 @@ const usersControllers = {
       if (!passwordIsValid) {
         return res
           .status(401)
-          .json({ error: "Password is incorrectn authentication failed" });
+          .json({ error: "Password is incorrect, authentication failed" });
       }
 
       if (!process.env.JWT_SECRET) {

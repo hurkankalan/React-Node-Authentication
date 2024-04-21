@@ -1,5 +1,5 @@
 {
-  "name": "auth-app-ts-api",
+  "name": "react-node-authentication-api",
   "version": "1.0.0",
   "description": "Example of authentication with jwt (react, node, redux, postgresql)",
   "main": "index.ts",
