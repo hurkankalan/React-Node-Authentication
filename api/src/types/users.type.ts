@@ -1,3 +1,5 @@
+import { Request } from "express";
+
 export type Users = {
   id: number;
   email: string;
@@ -10,4 +12,12 @@ export type JwtPayload = {
   id: number;
   email: string;
   role: "admin" | "user";
+};
+
+export interface AuthenticatedRequest extends Request {
+  user: JwtPayload;
+}
+
+export type ResponseError = {
+  error: string;
 };

@@ -3,8 +3,10 @@ import { Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import authRouter from "./routes/auth.route";
-import userRouter from "./routes/users.route";
+import userRouter from "./routes/user.route";
+import adminRouter from "./routes/admin.route";
 import { isAuthenticated } from "./middlewares/auth.middleware";
+import { isAdmin } from "./middlewares/admin.middlware";
 
 const app = express();
 dotenv.config();
@@ -19,7 +21,8 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use(authRouter);
-app.use("/api/users", isAuthenticated, userRouter);
+app.use("/api/user", isAuthenticated, userRouter);
+app.use("/api/admin", isAdmin, adminRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port http://localhost/:${port}`);

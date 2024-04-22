@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { Response, NextFunction } from "express";
+import { AuthenticatedRequest, JwtPayload } from "../types/users.type";
 
 export function isAuthenticated(
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) {
@@ -21,6 +22,9 @@ export function isAuthenticated(
     const decodedToken = jwt.verify(token, privateKey);
 
     if (decodedToken) {
+      const decodedToken = jwt.decode(token) as JwtPayload;
+      req.user = decodedToken;
+
       next();
     } else {
       return res.status(403).json({ error: "Unauthorized, token is invalid" });
