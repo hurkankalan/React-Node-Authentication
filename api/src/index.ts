@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import authRouter from "./routes/auth.route";
-import userRouter from "./routes/user.route";
+import userRouter from "./routes/users.route";
 import adminRouter from "./routes/admin.route";
 import { isAuthenticated } from "./middlewares/auth.middleware";
 import { isAdmin } from "./middlewares/admin.middlware";
