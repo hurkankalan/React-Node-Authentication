@@ -15,7 +15,7 @@ const usersModels = {
     return pool.query("SELECT * FROM users WHERE email = $1", [email]);
   },
 
-  createUser(email: string, password: string): Promise<QueryResult<Users>> {
+  createUser(email: string, password: string): Promise<QueryResult> {
     return pool.query("INSERT INTO users (email, password) VALUES ($1, $2)", [
       email,
       password,
@@ -26,14 +26,14 @@ const usersModels = {
     id: number,
     email: string,
     password: string
-  ): Promise<QueryResult<Users>> {
+  ): Promise<QueryResult> {
     return pool.query(
       "UPDATE users SET email = $2, password = $3 WHERE id = $1",
       [id, email, password]
     );
   },
 
-  deleteUser(id: number): Promise<QueryResult<Users>> {
+  deleteUser(id: number): Promise<QueryResult> {
     return pool.query("DELETE FROM users WHERE id = $1", [id]);
   },
 };

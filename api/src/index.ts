@@ -22,7 +22,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use(authRouter);
 app.use("/api/user", isAuthenticated, userRouter);
-app.use("/api/admin", isAdmin, adminRouter);
+app.use("/api/admin", isAuthenticated, isAdmin, adminRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port http://localhost/:${port}`);

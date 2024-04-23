@@ -15,7 +15,7 @@ export type JwtPayload = {
 };
 
 export interface AuthenticatedRequest extends Request {
-  user: JwtPayload;
+  user?: JwtPayload;
 }
 
 export type ResponseError = {
