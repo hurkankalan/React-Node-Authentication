@@ -19,9 +19,9 @@ export function isAuthenticated(
       });
     }
 
-    const decodedToken = jwt.verify(token, privateKey);
+    const checkTokenSignature = jwt.verify(token, privateKey);
 
-    if (decodedToken) {
+    if (checkTokenSignature) {
       const decodedToken = jwt.decode(token) as JwtPayload;
       req.user = decodedToken;
 

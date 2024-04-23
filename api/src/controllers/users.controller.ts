@@ -54,7 +54,7 @@ const usersControllers = {
     req: AuthenticatedRequest,
     res: Response
   ): Promise<Response | ResponseError> {
-    const id = userIdByRole(req.user, parseInt(req.params.id));
+    const id = req.user.id;
 
     const { email, password } = req.body;
 
@@ -78,7 +78,7 @@ const usersControllers = {
 
       if (
         email === oldUserInfos.rows[0].email &&
-        password === oldUserInfos.rows[0].password
+        (await comparePassword(password, oldUserInfos.rows[0].password))
       ) {
         return res
           .status(304)
@@ -239,7 +239,7 @@ const usersControllers = {
     const token = req.headers["authorization"];
 
     if (!token) {
-      return res.status(401).json({ error: "No token provided" });
+      return res.status(401).json({ error: "You're already disconnected" });
     }
 
     req.headers["authorization"] = "";
