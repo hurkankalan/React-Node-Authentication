@@ -1,12 +1,17 @@
-import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { Request, Response } from "express";
 import { comparePassword } from "../utils/comparePassword";
 import { hashPassword } from "../utils/hashPassword";
 import usersModels from "../models/users.model";
-import { Users } from "../types/users.type";
+import { AuthenticatedRequest, Users } from "../types/users.type";
+import { ResponseError } from "../types/users.type";
+import { userIdByRole } from "../utils/userIdByRole";
 
 const usersControllers = {
-  async allUsers(req: Request, res: Response): Promise<Response<Users>> {
+  async allUsers(
+    req: Request,
+    res: Response
+  ): Promise<Response<Users | ResponseError>> {
     try {
       const users = await usersModels.getAllUsers();
 
@@ -21,15 +26,18 @@ const usersControllers = {
     }
   },
 
-  async userById(req: Request, res: Response): Promise<Response> {
-    const { id } = req.params;
+  async userById(
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<Response | ResponseError> {
+    const id = userIdByRole(req.user, parseInt(req.params.id));
 
     if (!id) {
       return res.status(400).json({ error: "Id is required" });
     }
 
     try {
-      const user = await usersModels.getUserById(parseInt(id));
+      const user = await usersModels.getUserById(id);
 
       if (!user.rows[0]) {
         return res.status(404).json({ error: "User not found" });
@@ -42,8 +50,12 @@ const usersControllers = {
     }
   },
 
-  async updateUser(req: Request, res: Response): Promise<Response> {
-    const { id } = req.params;
+  async updateUser(
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<Response | ResponseError> {
+    const id = req.user.id;
+
     const { email, password } = req.body;
 
     if (!id) {
@@ -58,7 +70,7 @@ const usersControllers = {
     }
 
     try {
-      const oldUserInfos = await usersModels.getUserById(parseInt(id));
+      const oldUserInfos = await usersModels.getUserById(id);
 
       if (!oldUserInfos.rows[0]) {
         return res.status(404).json({ error: "User not found" });
@@ -66,7 +78,7 @@ const usersControllers = {
 
       if (
         email === oldUserInfos.rows[0].email &&
-        password === oldUserInfos.rows[0].password
+        (await comparePassword(password, oldUserInfos.rows[0].password))
       ) {
         return res
           .status(304)
@@ -85,7 +97,7 @@ const usersControllers = {
       };
 
       const newUser = await usersModels.updateUser(
-        parseInt(id),
+        id,
         newUserInfos.email,
         newUserInfos.password
       );
@@ -100,21 +112,24 @@ const usersControllers = {
     }
   },
 
-  async deleteUser(req: Request, res: Response): Promise<Response> {
-    const { id } = req.params;
+  async deleteUser(
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<Response | ResponseError> {
+    const id = userIdByRole(req.user, parseInt(req.params.id));
 
     if (!id) {
       return res.status(400).json("Id is required");
     }
 
     try {
-      const checkUserIsExist = await usersModels.getUserById(parseInt(id));
+      const checkUserIsExist = await usersModels.getUserById(id);
 
       if (!checkUserIsExist.rows[0]) {
         return res.status(404).json({ error: "User not found" });
       }
 
-      const deleteUser = await usersModels.deleteUser(parseInt(id));
+      const deleteUser = await usersModels.deleteUser(id);
 
       if (deleteUser.rowCount === 0) {
         return res.status(500).json({ error: "Error duraing deleting user" });
@@ -126,7 +141,10 @@ const usersControllers = {
     }
   },
 
-  async register(req: Request, res: Response): Promise<Response> {
+  async register(
+    req: Request,
+    res: Response
+  ): Promise<Response | ResponseError> {
     const { email, password } = req.body;
 
     for (const key in req.body) {
@@ -157,7 +175,7 @@ const usersControllers = {
     }
   },
 
-  async login(req: Request, res: Response): Promise<Response> {
+  async login(req: Request, res: Response): Promise<Response | ResponseError> {
     const { email, password } = req.body;
     const token = req.headers["authorization"];
 
@@ -217,23 +235,18 @@ const usersControllers = {
     }
   },
 
-  async logout(req: Request, res: Response): Promise<Response> {
+  async logout(req: Request, res: Response): Promise<Response | ResponseError> {
     const token = req.headers["authorization"];
 
-    try {
-      if (!token) {
-        return res.status(401).json({ error: "No token provided" });
-      }
-
-      req.headers["authorization"] = "";
-
-      return res
-        .status(200)
-        .json({ message: "You have been successfully disconnected" });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: error.message });
+    if (!token) {
+      return res.status(401).json({ error: "You're already disconnected" });
     }
+
+    req.headers["authorization"] = "";
+
+    return res
+      .status(200)
+      .json({ message: "You have been successfully disconnected" });
   },
 };
 
